@@ -1,4 +1,7 @@
+import base64
+from io import BytesIO
 from flask import Flask, render_template, request, jsonify
+import qrcode
 from web3 import Web3
 import hashlib
 from pymongo import MongoClient
@@ -137,59 +140,98 @@ def admin_login():
 def publish():
     data = request.get_json()
     required_fields = ["awardee_name", "certificate_name", "certificate_code"]
-
-    if not data:
-        return jsonify({"error": "Request body must be JSON"}), 400
-
+    
+    # Validation checks
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field: {field}"}), 400
 
-    awardee_name = data["awardee_name"]
-    certificate_name = data["certificate_name"]
-    certificate_code = data["certificate_code"]
-
-    certificate_hash = hashlib.sha512((certificate_code + certificate_name).encode()).hexdigest()
+    # Generate certificate hash
+    certificate_hash = hashlib.sha512(
+        f"{data['certificate_code']}:{data['certificate_name']}".encode()
+    ).hexdigest().lower()
 
     try:
+        # Generate QR code with verification URL
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        verification_url = f"{request.url_root}verify?certificate_hash={certificate_hash}"
+        qr.add_data(verification_url)
+        qr.make(fit=True)
+        
+        # Convert QR code to base64
+        img_buffer = BytesIO()
+        qr.make_image(fill_color="black", back_color="white").save(img_buffer, format="PNG")
+        qr_base64 = base64.b64encode(img_buffer.getvalue()).decode("utf-8")
+
+        # Publish to blockchain
         tx_hash = contract.functions.publishCertificate(
-            awardee_name, certificate_name, certificate_code, certificate_hash
+            data['awardee_name'],
+            data['certificate_name'],
+            data['certificate_code'],
+            certificate_hash
         ).transact({'from': default_account})
 
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        web3.eth.wait_for_transaction_receipt(tx_hash)
 
         return jsonify({
             "message": "Certificate published successfully",
             "certificate_hash": certificate_hash,
-            "transaction_hash": tx_hash.hex()
+            "qr_code": qr_base64  # Include QR code in response
         }), 201
+
     except Exception as e:
         return jsonify({"error": f"Failed to publish certificate: {str(e)}"}), 500
+    
+# In app.py, update the verify_certificate route:
 
 @app.route('/verify_certificate', methods=['GET'])
 def verify_certificate():
     certificate_hash = request.args.get('certificate_hash')
     if not certificate_hash:
-        return jsonify({"error": "Missing certificate_hash parameter"}), 400
+        return jsonify({"verified": False, "message": "Missing certificate hash"}), 400
 
     try:
-        verified, cert = contract.functions.verifyCertificate(certificate_hash).call()
+        # Explicit blockchain connection check
+        if not web3.is_connected():
+            return jsonify({
+                "verified": False,
+                "message": "Blockchain connection error"
+            }), 500
+
+        # Call the smart contract's verifyCertificate function
+        verified, cert_data = contract.functions.verifyCertificate(certificate_hash).call()
 
         if not verified:
-            return jsonify({"verified": False, "message": "Certificate not found or invalid"}), 200
+            return jsonify({
+                "verified": False,
+                "message": "Certificate not found on blockchain"
+            }), 200
+
+        # Extract certificate data from the tuple returned by the contract
+        certificate = {
+            "awardee_name": cert_data[0],  # Index 0 = awardeeName
+            "certificate_name": cert_data[1],  # Index 1 = certificateName
+            "certificate_code": cert_data[2],  # Index 2 = certificateCode
+            "certificate_hash": cert_data[3],  # Index 3 = certificateHash
+            "timestamp": cert_data[4]  # Index 4 = timestamp
+        }
 
         return jsonify({
             "verified": True,
-            "certificate": {
-                "awardee_name": cert[0],
-                "certificate_name": cert[1],
-                "certificate_code": cert[2],
-                "certificate_hash": cert[3],
-                "timestamp": cert[4]
-            }
+            "certificate": certificate
         }), 200
-    except Exception as e:
-        return jsonify({"error": f"Verification failed: {str(e)}"}), 500
 
+    except Exception as e:
+        print(f"Verification error: {str(e)}")
+        return jsonify({
+            "verified": False,
+            "message": f"Verification failed: {str(e)}"
+        }), 500
+    
 if __name__ == "__main__":
     app.run(debug=True)
