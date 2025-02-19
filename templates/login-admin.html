@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - VidwanCheck</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login-admin.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('index') }}" class="logo">VidwanCheck</a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="admin-section">
+        <div class="container">
+            <div class="admin-content">
+                <h1>Certificate Details</h1>
+                <form id="certificateForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="awardeeName">Name of Awardee</label>
+                        <input type="text" id="awardeeName" name="awardeeName" required placeholder="Enter full name of awardee">
+                    </div>
+                    <div class="form-group">
+                        <label for="certificationName">Name of Certification</label>
+                        <input type="text" id="certificationName" name="certificationName" required placeholder="Enter certification name">
+                    </div>
+                    <div class="form-group">
+                        <label for="certificationNumber">Certification Number (12 digits)</label>
+                        <input type="text" id="certificationNumber" name="certificationNumber" required pattern="[0-9]{12}" maxlength="12" placeholder="Enter 12-digit certification number">
+                        <span class="input-hint">Enter exactly 12 digits</span>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="save-button" onclick="saveToBackend()">Save to Backend</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

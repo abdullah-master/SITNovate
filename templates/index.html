@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VidwanCheck - Authentic Certificate Verification</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VidwanCheck - Blockchain Certificate Verification</title>
+        <!-- Add these two lines for your CSS files -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}">
+        <!-- Keep your existing CDN links -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </head>
 <body>
-    <nav>
-        <div class="container">
-            <a href="#" class="logo-container">
-                <img src="WhatsApp Image 2025-02-19 at 14.37.57.jpeg" alt="VidwanCheck" class="logo-image">
-                <span class="logo-text">VidwanCheck</span>
-            </a>
-            <div class="nav-links">
-                <a href="#about">About Us</a>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('index') }}" class="logo">VidwanCheck</a>
+<div class="nav-links">
+    <a href="{{ url_for('index') }}">Home</a>
+                <a href="#about">About</a>
                 <a href="#contact">Contact</a>
             </div>
         </div>
@@ -44,7 +46,7 @@
                 <div class="card">
                     <h2>Verify Certificate</h2>
                     <p>Want to verify a certificate? Click here to get started.</p>
-                    <button class="card-button" data-action="verify" onclick="window.location.href='verify.html'">Verify Now</button>
+                    <button class="card-button" data-action="verify">Verify Now</button>
                 </div>
             </div>
         </div>
@@ -151,10 +153,10 @@
                 button.addEventListener('click', () => {
                     const action = button.getAttribute('data-action');
                     if (action === 'login') {
-                        window.location.href = 'login.html';
-                    } else if (action === 'verify') {
-                        window.location.href = 'verify.html';
-                    }
+    window.location.href = "{{ url_for('login') }}";
+} else if (action === 'verify') {
+    window.location.href = "{{ url_for('verify') }}";
+}
                 });
             });
 

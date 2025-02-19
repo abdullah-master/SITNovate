@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Certificate - VidwanCheck</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://unpkg.com/html5-qrcode"></script>
+    </head>
+    
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('index') }}" class="logo">VidwanCheck</a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Back
+    </a>
+
+    <section class="verify-section">
+        <div class="verify-container">
+            <h1>Verify Certificate</h1>
+            <div class="scanner-container">
+                <div id="reader"></div>
+                <div id="scan-result"></div>
+                <div class="scanner-controls">
+                    <button id="startButton" class="control-button">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button id="stopButton" class="control-button" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Camera
+                    </button>
+                    <label for="qr-input-file" class="control-button">
+                        <i class="fas fa-file-upload"></i> Upload QR Code
+                        <input type="file" id="qr-input-file" accept="image/*" style="display: none;">
+                    </label>
+                </div>
+            </div>
+            <div id="verification-result" class="verification-result"></div>
+        </div>
+    </section>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const scanResult = document.getElementById('scan-result');
+        const verificationResult = document.getElementById('verification-result');
+        const fileInput = document.getElementById('qr-input-file');
+
+        const qrConfig = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+
+        let scanning = false;
+
+        function startScanning() {
+            scanResult.innerHTML = '<div class="scan-message">Starting camera...</div>';
+            
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    const cameraId = devices[0].id;
+                    html5QrCode.start(
+                        cameraId,
+                        qrConfig,
+                        onScanSuccess,
+                        onScanFailure
+                    ).then(() => {
+                        scanning = true;
+                        startButton.style.display = 'none';
+                        stopButton.style.display = 'inline-block';
+                        scanResult.innerHTML = '<div class="scan-message">Scanning QR Code...</div>';
+                    }).catch(err => {
+                        scanResult.innerHTML = `
+                            <div class="scan-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Error starting camera: ${err}
+                            </div>
+                        `;
+                    });
+                } else {
+                    scanResult.innerHTML = `
+                        <div class="scan-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            No cameras found
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function stopScanning() {
+            if (scanning) {
+                html5QrCode.stop().then(() => {
+                    scanning = false;
+                    startButton.style.display = 'inline-block';
+                    stopButton.style.display = 'none';
+                    scanResult.innerHTML = '';
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            stopScanning();
+            try {
+                const certData = JSON.parse(decodedText);
+                processVerification(certData);
+            } catch (e) {
+                scanResult.innerHTML = `
+                    <div class="scan-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Invalid QR Code format
+                    </div>
+                    <button onclick="startScanning()" class="retry-button">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                `;
+            }
+        }
+
+        function onScanFailure(error) {
+            // Handle scan failure silently
+            console.warn(`QR code scan error: ${error}`);
+        }
+
+        function processVerification(data) {
+            verificationResult.innerHTML = `
+                <div class="result-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Verifying certificate...
+                </div>
+            `;
+
+            // Simulate verification process
+            setTimeout(() => {
+                verificationResult.innerHTML = `
+                    <div class="result-success">
+                        <i class="fas fa-check-circle"></i>
+                        Certificate verified successfully!
+                        <div class="certificate-details">
+                            <p><strong>Certificate ID:</strong> ${data.id || 'N/A'}</p>
+                            <p><strong>Issuing Institution:</strong> ${data.issuer || 'N/A'}</p>
+                            <p><strong>Student Name:</strong> ${data.name || 'N/A'}</p>
+                            <p><strong>Course:</strong> ${data.course || 'N/A'}</p>
+                            <p><strong>Issue Date:</strong> ${data.issueDate || 'N/A'}</p>
+                            <p><strong>Verification Date:</strong> ${new Date().toLocaleDateString()}</p>
+                            <p><strong>Blockchain Status:</strong> Valid</p>
+                        </div>
+                    </div>
+                `;
+            }, 2000);
+        }
+
+        // File input handling
+        fileInput.addEventListener('change', event => {
+            if (event.target.files.length === 0) {
+                return;
+            }
+            
+            const imageFile = event.target.files[0];
+            
+            scanResult.innerHTML = `
+                <div class="scan-message">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Processing image...
+                </div>
+            `;
+
+            html5QrCode.scanFile(imageFile, true)
+                .then(decodedText => {
+                    try {
+                        const certData = JSON.parse(decodedText);
+                        processVerification(certData);
+                    } catch (e) {
+                        scanResult.innerHTML = `
+                            <div class="scan-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Invalid QR Code format
+                            </div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    scanResult.innerHTML = `
+                        <div class="scan-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Could not find a valid QR code in the image
+                        </div>
+                    `;
+                });
+        });
+
+        // Event Listeners
+        startButton.addEventListener('click', startScanning);
+        stopButton.addEventListener('click', stopScanning);
+
+        // Start scanning automatically if camera permissions are already granted
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    startScanning();
+                })
+                .catch(function(err) {
+                    console.log("Camera permission not granted");
+                });
+        }
+    </script>
+</body>
+</html>
