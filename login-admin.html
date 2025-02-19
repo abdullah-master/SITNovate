@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - VidwanCheck</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="forms.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="#" class="logo-container">
+                <img src="assets/logo.png" alt="VidwanCheck" class="logo-image">
+                <span class="logo-text">VidwanCheck</span>
+            </a>
+            <div class="nav-links">
+                <a href="home.html">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="admin-section">
+        <div class="container">
+            <div class="admin-content">
+                <h1>Certificate Details</h1>
+                <form id="certificateForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="awardeeName">Name of Awardee</label>
+                        <input type="text" id="awardeeName" name="awardeeName" required 
+                               placeholder="Enter full name of awardee">
+                    </div>
+                    <div class="form-group">
+                        <label for="certificationName">Name of Certification</label>
+                        <input type="text" id="certificationName" name="certificationName" required 
+                               placeholder="Enter certification name">
+                    </div>
+                    <div class="form-group">
+                        <label for="certificationNumber">Certification Number (12 digits)</label>
+                        <input type="text" id="certificationNumber" name="certificationNumber" required 
+                               pattern="[0-9]{12}" maxlength="12" 
+                               placeholder="Enter 12-digit certification number"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)">
+                        <span class="input-hint">Enter exactly 12 digits</span>
+                    </div>
+                    <button type="submit" class="submit-button">Generate Certificate</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="success-card">
+                <div class="success-icon">✓</div>
+                <h2>Published Successfully!</h2>
+                <p>Certificate details have been added to the blockchain.</p>
+                <button class="get-qr-button" onclick="generateQRCode()">Get QR Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Already Published Modal -->
+    <div id="existingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="success-card">
+                <div class="warning-icon">!</div>
+                <h2>Already Published</h2>
+                <p>This certificate has already been published to the blockchain.</p>
+                <button class="get-qr-button" onclick="generateQRCode()">Get QR Code</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
