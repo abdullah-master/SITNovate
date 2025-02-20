@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Certificate - VidwanCheck</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        .main-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .primary-button, .secondary-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .primary-button {
+            background-color: #1a73e8;
+            color: white;
+        }
+        .primary-button:hover {
+            background-color: #1557b0;
+            transform: translateY(-2px);
+        }
+        .secondary-button {
+            background-color: #f8f9fa;
+            color: #1a73e8;
+            border: 2px solid #1a73e8;
+        }
+        .secondary-button:hover {
+            background-color: #e8f0fe;
+            transform: translateY(-2px);
+        }
+        .manual-check {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .manual-check input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 300px;
+            transition: border-color 0.3s ease;
+        }
+        .manual-check input:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+
+        /* Updated styles for verification result popup */
+        #verificationResult {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(26, 115, 232, 0.1);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 1001;
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #verificationResult.show {
+            display: flex;
+        }
+
+        #verificationResult.show .backdrop {
+            opacity: 1;
+        }
+
+        #verificationResult.show .result-card {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .result-card .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #5f6368;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .result-card .close-btn:hover {
+            color: #1a73e8;
+            transform: scale(1.1);
+        }
+
+        .result-card.success {
+            border-top: 4px solid #34a853;
+        }
+
+        .result-card.error {
+            border-top: 4px solid #ea4335;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('index') }}" class="logo">VidwanCheck</a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+
+    <section class="verify-section">
+        <div class="verify-container">
+            <h1>Verify Certificate</h1>
+
+            <div class="main-buttons">
+                <button class="primary-button" onclick="startQRScanner()" id="startCameraBtn">Start Camera</button>
+                <button class="secondary-button" onclick="toggleManualCheck()" id="manualBtn">Manual</button>
+            </div>
+
+            <div class="scanner-container">
+                <div id="reader"></div>
+                <p id="scan-result"></p>
+            </div>
+
+            <div class="manual-check" style="display: none;">
+                <input type="text" id="certificateHash" placeholder="Enter Certificate Hash" required>
+                <button class="primary-button" onclick="verifyCertificate()">Check</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="verificationResult"></div>
+
+    <script>
+        let qrScanner;
+
+        function startQRScanner() {
+            qrScanner = new Html5Qrcode("reader");
+            qrScanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                onScanFailure
+            ).catch(error => {
+                alert("Camera error: " + error);
+            });
+        }
+
+        function onScanSuccess(decodedText) {
+            document.getElementById("scan-result").innerText = "QR Code Detected!";
+            processQRCode(decodedText);
+            qrScanner.stop();
+        }
+
+        function onScanFailure(error) {
+            console.warn("QR scan error:", error);
+        }
+
+        function processQRCode(decodedText) {
+            try {
+                const url = new URL(decodedText);
+                const certificateHash = url.searchParams.get("certificate_hash");
+                if (!certificateHash) {
+                    throw new Error("Invalid QR Code format");
+                }
+                fetchCertificateDetails(certificateHash);
+            } catch (error) {
+                alert("Invalid QR Code: " + error.message);
+            }
+        }
+
+        function verifyCertificate() {
+            const hash = document.getElementById("certificateHash").value.trim();
+            if (!hash) {
+                alert("Please enter a certificate hash.");
+                return;
+            }
+            fetchCertificateDetails(hash);
+        }
+
+        function toggleManualCheck() {
+            const manualCheckDiv = document.querySelector('.manual-check');
+            if (manualCheckDiv.style.display === 'none') {
+                manualCheckDiv.style.display = 'flex';
+            } else {
+                manualCheckDiv.style.display = 'none';
+            }
+        }
+
+        function closeVerificationResult() {
+            const resultDiv = document.getElementById("verificationResult");
+            resultDiv.classList.remove('show');
+        }
+
+        function fetchCertificateDetails(hash) {
+            fetch(`/verify_certificate?certificate_hash=${hash}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById("verificationResult");
+                    if (data.verified) {
+                        const cert = data.certificate;
+                        resultDiv.innerHTML = `
+                            <div class="backdrop" onclick="closeVerificationResult()"></div>
+                            <div class="result-card success">
+                                <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                                <h2>Certificate Verified ✅</h2>
+                                <p><strong>Awardee Name:</strong> ${cert.awardee_name}</p>
+                                <p><strong>Certificate Name:</strong> ${cert.certificate_name}</p>
+                                <p><strong>Certificate ID:</strong> ${cert.certificate_code}</p>
+                                <p><strong>Issued On:</strong> ${new Date(cert.timestamp * 1000).toLocaleDateString()}</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="backdrop" onclick="closeVerificationResult()"></div>
+                            <div class="result-card error">
+                                <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                                <h2>Certificate Not Found ❌</h2>
+                                <p>${data.message}</p>
+                            </div>
+                        `;
+                    }
+                    resultDiv.classList.add('show');
+                })
+                .catch(error => {
+                    const resultDiv = document.getElementById("verificationResult");
+                    resultDiv.innerHTML = `
+                        <div class="backdrop" onclick="closeVerificationResult()"></div>
+                        <div class="result-card error">
+                            <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                            <h2>Error ❌</h2>
+                            <p>Error fetching verification results. Please try again.</p>
+                        </div>
+                    `;
+                    resultDiv.classList.add('show');
+                    console.error("Verification error:", error);
+                });
+        }
+
+        // Close modal when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeVerificationResult();
+            }
+        });
+    </script>
+</body>
+</html>
