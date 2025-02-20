@@ -1,0 +1,84 @@
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    margin: 10% auto;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.certificate-details {
+    text-align: left;
+}
+
+.certificate-details h2 {
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.details-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.details-container p {
+    margin: 10px 0;
+    color: #444;
+}
+
+.verification-status {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.verification-status.verified {
+    background: #e3f7e3;
+    color: #2d862d;
+}
+
+.verification-status.invalid {
+    background: #ffe6e6;
+    color: #cc0000;
+}
+
+.invalid h2 {
+    color: #cc0000;
+}
+.scan-message {
+color: var(--dark);
+padding: 10px;
+background: rgba(255, 255, 255, 0.9);
+border-radius: 8px;
+margin-top: 20px;
+}
