@@ -1,128 +1,122 @@
 # VidwanCheck - Blockchain Certificate Verification System
 
-VidwanCheck is a modern, secure, and user-friendly blockchain-based certificate verification system. It allows institutions to issue tamper-proof digital certificates and enables anyone to instantly verify their authenticity using QR codes.
+A secure and efficient blockchain-based solution for certificate verification and management. VidwanCheck allows institutions to issue tamper-proof digital certificates and enables instant verification through QR codes and blockchain technology.
 
-![VidwanCheck Logo](static/images/logo.png)
+## Features
 
-## 🌟 Features
+- Secure certificate issuance with blockchain integration
+- QR code generation and scanning for instant verification
+- Admin dashboard for certificate management
+- Mobile-responsive design
+- Chrome extension for quick verification
+- Real-time blockchain validation
+- Modern, intuitive user interface
 
-- *Blockchain-Powered Verification*: Utilizes Ethereum blockchain for immutable certificate storage
-- *QR Code Integration*: Quick verification through scannable QR codes
-- *User-Friendly Interface*: Modern, responsive design with smooth animations
-- *Secure Admin Panel*: Protected administrative access for certificate issuance
-- *Instant Verification*: Real-time certificate validation
-- *MongoDB Integration*: Secure storage for administrative data
-- *Download Certificates*: Easy QR code download functionality
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8+
-- Node.js and npm
-- MongoDB
-- Ganache (for local blockchain)
-- MetaMask (for blockchain interaction)
-
-### Installation
-
-1. Clone the repository:
-   bash
-   git clone https://github.com/yourusername/blockchain-certification.git
-   cd blockchain-certification
-   
-
-2. Install Python dependencies:
-   bash
-   pip install -r requirements.txt
-   
-
-3. Install Truffle and project dependencies:
-   bash
-   npm install -g truffle
-   npm install
-   
-
-4. Start Ganache and configure truffle-config.js with your network settings
-
-5. Deploy smart contracts:
-   bash
-   truffle migrate --reset
-   
-
-6. Start MongoDB service
-
-7. Run the application:
-   bash
-   python app.py
-   
-
-## 💻 Usage
-
-### For Institutions (Admins)
-
-1. Access the admin panel through /login-admin
-2. Login with your credentials
-3. Fill in certificate details:
-   - Awardee Name
-   - Certificate Name
-   - Certificate ID
-4. Generate and issue the certificate
-5. Download the QR code for distribution
-
-### For Certificate Verification
-
-1. Visit the homepage
-2. Click "Verify Certificate"
-3. Either:
-   - Scan the QR code using your device's camera
-   - Manually enter the certificate hash
-4. View verification results instantly
-
-## 🏗 Project Structure
-
-
-blockchain-certification/
-├── app.py              # Flask application main file
-├── contracts/          # Ethereum smart contracts
-├── migrations/         # Truffle migration files
-├── static/            # Static assets (CSS, JS, images)
-├── templates/         # HTML templates
-├── test/             # Smart contract tests
-└── truffle-config.js  # Truffle configuration
-
-
-## 🔒 Security Features
-
-- Blockchain-based immutable records
-- Secure admin authentication
-- MongoDB for secure data storage
-- Protected API endpoints
-- Input validation and sanitization
-
-## 🛠 Technology Stack
+## Technology Stack
 
 - *Frontend*: HTML5, CSS3, JavaScript
 - *Backend*: Flask (Python)
-- *Blockchain*: Ethereum (Solidity)
+- *Blockchain*: Ethereum (Solidity Smart Contracts)
 - *Database*: MongoDB
-- *Development Tools*: Truffle, Ganache
-- *Libraries*: Web3.py, QRCode
+- *Additional Tools*: 
+  - Web3.py for blockchain interaction
+  - HTML5-QRCode for QR scanning
+  - Chrome Extension APIs
 
-## 🤝 Contributing
+## Project Structure
 
-Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📝 License
+blockchain-certification/
+├── app.py                 # Main Flask application
+├── contracts/            # Ethereum smart contracts
+│   └── Certificate.sol   # Certificate smart contract
+├── extension/           # Chrome extension files
+│   ├── manifest.json
+│   ├── popup.html
+│   ├── popup.js
+│   └── styles.css
+├── migrations/          # Truffle migration scripts
+├── static/             # Static assets
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── templates/          # HTML templates
+│   ├── index.html
+│   ├── login-admin.html
+│   └── verify.html
+├── test/              # Smart contract tests
+├── truffle-config.js  # Truffle configuration
+└── README.md
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📧 Contact
+## Installation
 
-For any queries or support, please contact:
-- Email: info@vidwancheck.com
-- Phone: +91 1234567890
+1. Clone the repository:
+bash
+git clone https://github.com/yourusername/blockchain-certification.git
+cd blockchain-certification
 
----
 
-Made with ❤ by VidwanCheck Team
+2. Install Python dependencies:
+bash
+pip install -r requirements.txt
+
+
+3. Install and configure MongoDB:
+- Download and install MongoDB
+- Start MongoDB service
+- Create a database named 'certificate_db'
+
+4. Configure Ethereum environment:
+bash
+npm install -g truffle
+npm install
+truffle compile
+truffle migrate
+
+
+5. Start the Flask application:
+bash
+python app.py
+
+
+6. Install Chrome Extension (Developer Mode):
+- Open Chrome and go to chrome://extensions/
+- Enable "Developer mode"
+- Click "Load unpacked"
+- Select the extension folder
+
+## Usage
+
+1. *Admin Access*:
+   - Navigate to /login-admin
+   - Login with admin credentials
+   - Issue new certificates
+   - Manage existing certificates
+
+2. *Certificate Verification*:
+   - Scan QR code using the web interface or Chrome extension
+   - Enter certificate hash manually
+   - View verification results instantly
+
+3. *Chrome Extension*:
+   - Click the VidwanCheck extension icon
+   - Choose between QR scanning or manual hash input
+   - View verification results in a popup
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (git checkout -b feature/AmazingFeature)
+3. Commit your changes (git commit -m 'Add some AmazingFeature')
+4. Push to the branch (git push origin feature/AmazingFeature)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+Your Name - your.email@example.com
+Project Link: [https://github.com/yourusername/blockchain-certification](https://github.com/yourusername/blockchain-certification)
