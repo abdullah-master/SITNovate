@@ -288,6 +288,64 @@
                 });
         }
 
+        function showPopup(message) {
+            const resultDiv = document.getElementById("verificationResult");
+            resultDiv.innerHTML = `
+                <div class="backdrop" onclick="closeVerificationResult()"></div>
+                <div class="result-card error">
+                    <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                    <h2>Certificate Not Verified ❌</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+            resultDiv.classList.add('show');
+        }
+
+        function onScanSuccess(decodedText) {
+            document.getElementById("scan-result").innerText = "QR Code Detected!";
+            processQRCode(decodedText);
+            qrScanner.stop();
+            fetchCertificateDetails(decodedText);
+        }
+
+        function fetchCertificateDetails(hash) {
+            fetch(`/verify_certificate?certificate_hash=${hash}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById("verificationResult");
+                    if (data.verified) {
+                        const cert = data.certificate;
+                        resultDiv.innerHTML = `
+                            <div class="backdrop" onclick="closeVerificationResult()"></div>
+                            <div class="result-card success">
+                                <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                                <h2>Certificate Verified ✅</h2>
+                                <p><strong>Awardee Name:</strong> ${cert.awardee_name}</p>
+                                <p><strong>Certificate Name:</strong> ${cert.certificate_name}</p>
+                                <p><strong>Certificate ID:</strong> ${cert.certificate_code}</p>
+                                <p><strong>Issued On:</strong> ${new Date(cert.timestamp * 1000).toLocaleDateString()}</p>
+                            </div>
+                        `;
+                    } else {
+                        showPopup('Certificate Not Verified');
+                    }
+                    resultDiv.classList.add('show');
+                })
+                .catch(error => {
+                    const resultDiv = document.getElementById("verificationResult");
+                    resultDiv.innerHTML = `
+                        <div class="backdrop" onclick="closeVerificationResult()"></div>
+                        <div class="result-card error">
+                            <button class="close-btn" onclick="closeVerificationResult()">×</button>
+                            <h2>Error ❌</h2>
+                            <p>Error fetching verification results. Please try again.</p>
+                        </div>
+                    `;
+                    resultDiv.classList.add('show');
+                    console.error("Verification error:", error);
+                });
+        }
+
         // Close modal when pressing Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
