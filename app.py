@@ -89,17 +89,16 @@ contract_abi = [
 # Create contract instance
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
-# Default account for transactions
+
 default_account = "0x24af5Ae5400781935b5d26611c671432AE41D098"
 
-# ------------------ MongoDB Integration ------------------
-# Connect to MongoDB (ensure MongoDB is running on your machine)
+
 client = MongoClient("mongodb://localhost:27017/")
 # Database name: VidwanCheckDB
 db = client["VidwanCheckDB"]
 # Collection name: admins (store admin credentials here)
 admins_collection = db["admins"]
-# ---------------------------------------------------------
+
 
 @app.route('/')
 def index():

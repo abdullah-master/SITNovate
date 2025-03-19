@@ -98,18 +98,36 @@
             const img = document.getElementById('qrCodeImage');
             const awardeeName = document.getElementById('awardeeName').value;
             
-            // Create a canvas to handle the image
+            // Wait for the image to be fully loaded
+            if (!img.complete) {
+                img.onload = function() {
+                    downloadQRCodeImage(img, awardeeName);
+                };
+            } else {
+                downloadQRCodeImage(img, awardeeName);
+            }
+        }
+
+        function downloadQRCodeImage(img, awardeeName) {
+            // Create a canvas with the exact dimensions of the QR code
             const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
+            // Set canvas size to match the actual QR code size (200x200 as defined in CSS)
+            canvas.width = 200;
+            canvas.height = 200;
             
-            // Create a temporary link to download the image
+            const ctx = canvas.getContext('2d');
+            // Use proper image rendering
+            ctx.imageSmoothingEnabled = false;
+            // Draw the image with proper dimensions
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Create a temporary link and trigger download
             const link = document.createElement('a');
             link.download = `certificate_qr_${awardeeName.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href = canvas.toDataURL('image/png', 1.0); // Use maximum quality
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
 
         window.onload = function() {
